@@ -66,6 +66,12 @@ export default function AdminProducts() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Check if product limit is reached
+        if (products.length >= 15) {
+            alert('Product limit reached! You can only add up to 15 products.');
+            return;
+        }
+
         if (!formData.name || !formData.price || !formData.image) {
             alert('Please fill in all required fields');
             return;
@@ -121,8 +127,15 @@ export default function AdminProducts() {
     return (
         <div className="fade-in">
             <div className={styles.header}>
-                <h1 className={styles.title}>Product Management</h1>
-                <p className={styles.subtitle}>Add and manage your store products</p>
+                <div>
+                    <h1 className={styles.title}>Product Management</h1>
+                    <p className={styles.subtitle}>Add and manage your store products</p>
+                </div>
+                <div>
+                    <span className={`badge ${products.length >= 15 ? 'bg-danger' : 'bg-primary'}`} style={{ fontSize: '1rem', padding: '0.5rem 1rem' }}>
+                        {products.length} / 15 Products
+                    </span>
+                </div>
             </div>
 
             <div className="row">

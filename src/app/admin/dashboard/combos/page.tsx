@@ -93,6 +93,12 @@ export default function AdminCombos() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Check if combo limit is reached
+        if (combos.length >= 15) {
+            alert('Combo limit reached! You can only add up to 15 combo products.');
+            return;
+        }
+
         if (!formData.name || !formData.price || !formData.product1Id || !formData.product2Id) {
             alert('Please fill in all required fields');
             return;
@@ -152,8 +158,15 @@ export default function AdminCombos() {
     return (
         <div className="fade-in">
             <div className={styles.header}>
-                <h1 className={styles.title}>Combo Orders Management</h1>
-                <p className={styles.subtitle}>Create and manage special combo offers</p>
+                <div>
+                    <h1 className={styles.title}>Combo Orders Management</h1>
+                    <p className={styles.subtitle}>Create and manage special combo offers</p>
+                </div>
+                <div>
+                    <span className={`badge ${combos.length >= 15 ? 'bg-danger' : 'bg-primary'}`} style={{ fontSize: '1rem', padding: '0.5rem 1rem' }}>
+                        {combos.length} / 15 Combos
+                    </span>
+                </div>
             </div>
 
             <div className="row">

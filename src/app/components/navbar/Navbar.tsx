@@ -137,8 +137,14 @@ const Navbar = () => {
         setIsProfileModalOpen(false);
         setPhoneNumber('');
         setPassword('');
+
         if (isAdminLoginMode) {
-          router.push('/admin/dashboard');
+          // Wait a bit for the session to be set and context to update
+          setTimeout(() => {
+            router.push('/admin/dashboard');
+            // Force a hard reload to ensure the layout picks up the new session
+            window.location.href = '/admin/dashboard';
+          }, 500);
         }
       } else if (!isAdminLoginMode && result.error?.includes('not found')) {
         setIsSignupMode(true);
@@ -291,7 +297,7 @@ const Navbar = () => {
                         className={styles.loginButton}
                         onClick={() => {
                           if (user) {
-                            if (user.role === 'admin' || user.name === 'admin') {
+                            if (user.role === 'admin') {
                               router.push('/admin/dashboard');
                             } else {
                               setIsProfileDropdownOpen(!isProfileDropdownOpen);
@@ -316,7 +322,7 @@ const Navbar = () => {
                           <div className={styles.profileInfo}>
                             <div className={styles.profileName}>👤 {user.name}</div>
                             <div className={styles.profileEmail}>{user.email}</div>
-                            <div className={styles.profilePhone}>{user.phone}</div>
+                            <div className={styles.profilePhone}>{user.mobile}</div>
                           </div>
                           <button
                             className={styles.dropdownButton}
@@ -412,7 +418,7 @@ const Navbar = () => {
                         <div className={styles.profileInfo}>
                           <div className={styles.profileName}>👤 {user.name}</div>
                           <div className={styles.profileEmail}>{user.email}</div>
-                          <div className={styles.profilePhone}>{user.phone}</div>
+                          <div className={styles.profilePhone}>{user.mobile}</div>
                         </div>
                         <button
                           className={styles.dropdownButton}

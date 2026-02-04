@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { queryDB } from '@/app/lib/db';
 import { createSession, setSessionCookie } from '@/app/lib/session';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
     try {
@@ -13,11 +14,10 @@ export async function POST(request: Request) {
             );
         }
 
-        // Check credentials against admins table
-        // Note: Plain text password comparison as requested. Use hashing in production.
+        // Check credentials against admins table with bcrypt
         const admins = await queryDB(
-            'SELECT * FROM admins WHERE username = ? AND password = ?',
-            [username, password]
+            'SELECT * FROM admins WHERE username = ?',
+            [username]
         ) as any[];
 
         if (!admins || admins.length === 0) {
@@ -28,6 +28,16 @@ export async function POST(request: Request) {
         }
 
         const admin = admins[0];
+
+        // Compare password with bcrypt
+        const isPasswordValid = await bcrypt.compare(password, admin.password);
+
+        if (!isPasswordValid) {
+            return NextResponse.json(
+                { error: 'Invalid admin credentials' },
+                { status: 401 }
+            );
+        }
 
         // Create admin session
         const token = await createSession({
