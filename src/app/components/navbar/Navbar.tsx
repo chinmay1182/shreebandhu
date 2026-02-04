@@ -23,6 +23,10 @@ const Navbar = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSignupMode, setIsSignupMode] = useState(false);
   const [isAdminLoginMode, setIsAdminLoginMode] = useState(false);
+  const [showAdminResetPin, setShowAdminResetPin] = useState(false);
+  const [adminResetPin, setAdminResetPin] = useState('');
+  const [adminResetEmail, setAdminResetEmail] = useState('');
+  const [resetSuccess, setResetSuccess] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -127,7 +131,6 @@ const Navbar = () => {
     try {
       let result;
       if (isAdminLoginMode) {
-        // for admin login, phoneNumber state is used as username
         result = await adminLogin(phoneNumber, password);
       } else {
         result = await login(phoneNumber, password);
@@ -137,8 +140,11 @@ const Navbar = () => {
         setIsProfileModalOpen(false);
         setPhoneNumber('');
         setPassword('');
+
         if (isAdminLoginMode) {
-          router.push('/admin/dashboard');
+          setTimeout(() => {
+            window.location.href = '/admin/dashboard';
+          }, 500);
         }
       } else if (!isAdminLoginMode && result.error?.includes('not found')) {
         setIsSignupMode(true);
@@ -151,11 +157,6 @@ const Navbar = () => {
     } finally {
       setIsAuthLoading(false);
     }
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    setIsProfileDropdownOpen(false);
   };
 
   const handleSignup = async () => {
@@ -175,6 +176,7 @@ const Navbar = () => {
         setPhoneNumber('');
         setFullName('');
         setEmail('');
+        setPassword('');
       } else {
         setError(result.error || 'Signup failed');
       }
@@ -185,13 +187,60 @@ const Navbar = () => {
     }
   };
 
+  const handleAdminResetPinSubmit = async () => {
+    if (adminResetPin !== '852963') {
+      setError('Invalid PIN. Please try again.');
+      setAdminResetPin('');
+      return;
+    }
+
+    if (!adminResetEmail) {
+      setError('Email is required');
+      return;
+    }
+
+    setIsAuthLoading(true);
+    setError('');
+    setResetSuccess('');
+
+    try {
+      const response = await axios.post('/api/admin/forgot-password', {
+        username: 'admin',
+        authPassword: 'Fluppy',
+        email: adminResetEmail
+      });
+
+      if (response.data.success) {
+        setResetSuccess('✅ Password reset link sent to your email!');
+        setAdminResetEmail('');
+        setAdminResetPin('');
+        setTimeout(() => {
+          setShowAdminResetPin(false);
+          setResetSuccess('');
+          setIsProfileModalOpen(false);
+        }, 3000);
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to send reset email');
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSignupMode) {
+    if (showAdminResetPin) {
+      handleAdminResetPinSubmit();
+    } else if (isSignupMode) {
       handleSignup();
     } else {
       handleLogin();
     }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    setIsProfileDropdownOpen(false);
   };
 
   // Show loading state while checking authentication
@@ -291,7 +340,7 @@ const Navbar = () => {
                         className={styles.loginButton}
                         onClick={() => {
                           if (user) {
-                            if (user.role === 'admin' || user.name === 'admin') {
+                            if (user.role === 'admin') {
                               router.push('/admin/dashboard');
                             } else {
                               setIsProfileDropdownOpen(!isProfileDropdownOpen);
@@ -316,7 +365,7 @@ const Navbar = () => {
                           <div className={styles.profileInfo}>
                             <div className={styles.profileName}>👤 {user.name}</div>
                             <div className={styles.profileEmail}>{user.email}</div>
-                            <div className={styles.profilePhone}>{user.phone}</div>
+                            <div className={styles.profilePhone}>{user.mobile}</div>
                           </div>
                           <button
                             className={styles.dropdownButton}
@@ -412,7 +461,7 @@ const Navbar = () => {
                         <div className={styles.profileInfo}>
                           <div className={styles.profileName}>👤 {user.name}</div>
                           <div className={styles.profileEmail}>{user.email}</div>
-                          <div className={styles.profilePhone}>{user.phone}</div>
+                          <div className={styles.profilePhone}>{user.mobile}</div>
                         </div>
                         <button
                           className={styles.dropdownButton}
@@ -443,64 +492,106 @@ const Navbar = () => {
         <div className={styles.modalBackdrop}>
           <div className={styles.modalContent}>
             <h2 className={styles.modalTitle}>
-              {isAdminLoginMode ? 'Admin Login' : isSignupMode ? 'Sign Up' : 'Log In'}
+              {showAdminResetPin ? 'Reset Admin Password' : isAdminLoginMode ? 'Admin Login' : isSignupMode ? 'Sign Up' : 'Log In'}
             </h2>
 
             {error && <div className={styles.errorMessage}>{error}</div>}
+            {resetSuccess && <div className={styles.successMessage}>{resetSuccess}</div>}
 
             <form onSubmit={handleAuthSubmit}>
-              {isSignupMode && (
+              {showAdminResetPin ? (
+                // Admin Reset PIN & Email Form
                 <>
                   <input
-                    type="text"
-                    placeholder="Full Name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    type="password"
+                    placeholder="Enter Security PIN"
+                    value={adminResetPin}
+                    onChange={(e) => setAdminResetPin(e.target.value)}
                     className={styles.inputField}
+                    maxLength={6}
                     required
                   />
                   <input
                     type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    value={adminResetEmail}
+                    onChange={(e) => setAdminResetEmail(e.target.value)}
                     className={styles.inputField}
                     required
                   />
                 </>
-              )}
+              ) : (
+                <>
+                  {isSignupMode && (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Full Name"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className={styles.inputField}
+                        required
+                      />
+                      <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={styles.inputField}
+                        required
+                      />
+                    </>
+                  )}
 
-              <input
-                type={isAdminLoginMode ? "text" : "tel"}
-                placeholder={isAdminLoginMode ? "Username" : "Phone Number"}
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className={styles.inputField}
-                required
-              />
+                  <input
+                    type={isAdminLoginMode ? "text" : "tel"}
+                    placeholder={isAdminLoginMode ? "Username" : "Phone Number"}
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className={styles.inputField}
+                    required
+                  />
 
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={styles.inputField}
-                required
-              />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={styles.inputField}
+                    required
+                  />
 
-              {!isSignupMode && !isAdminLoginMode && (
-                <div style={{ textAlign: 'right', marginBottom: '10px' }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileModalOpen(false);
-                      router.push('/forgot-password');
-                    }}
-                    style={{ background: 'none', border: 'none', color: '#0070f3', cursor: 'pointer', fontSize: '0.9rem' }}
-                  >
-                    Forgot Password?
-                  </button>
-                </div>
+                  {!isSignupMode && !isAdminLoginMode && (
+                    <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsProfileModalOpen(false);
+                          router.push('/forgot-password');
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#0070f3', cursor: 'pointer', fontSize: '0.9rem' }}
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Admin Forgot Password Link */}
+                  {isAdminLoginMode && !showAdminResetPin && (
+                    <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAdminResetPin(true);
+                          setError('');
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#0070f3', cursor: 'pointer', fontSize: '0.9rem' }}
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
 
               <button
@@ -508,44 +599,60 @@ const Navbar = () => {
                 className={styles.authButton}
                 disabled={isAuthLoading}
               >
-                {isAuthLoading ? 'Processing....' : isAdminLoginMode ? 'Login as Admin' : isSignupMode ? 'Sign Up' : 'Log In'}
+                {isAuthLoading
+                  ? 'Processing...'
+                  : showAdminResetPin
+                    ? 'Send Reset Link'
+                    : isAdminLoginMode
+                      ? 'Login as Admin'
+                      : isSignupMode
+                        ? 'Sign Up'
+                        : 'Log In'}
               </button>
             </form>
 
-            <p className={styles.authToggle}>
-              {isSignupMode ? 'Already have an account?' : "Don't have an account?"}
-              <button
-                onClick={() => {
-                  setIsSignupMode(!isSignupMode);
-                  setError('');
-                }}
-                className={styles.toggleButton}
-              >
-                {isSignupMode ? 'Log In' : 'Sign Up'}
-              </button>
-            </p>
+            {!showAdminResetPin && (
+              <>
+                <p className={styles.authToggle}>
+                  {isSignupMode ? 'Already have an account?' : "Don't have an account?"}
+                  <button
+                    onClick={() => {
+                      setIsSignupMode(!isSignupMode);
+                      setError('');
+                    }}
+                    className={styles.toggleButton}
+                  >
+                    {isSignupMode ? 'Log In' : 'Sign Up'}
+                  </button>
+                </p>
 
-            {!isSignupMode && (
-              <p className={styles.authToggle}>
-                <button
-                  onClick={() => {
-                    setIsAdminLoginMode(!isAdminLoginMode);
-                    setError('');
-                    setPhoneNumber('');
-                    setPassword('');
-                  }}
-                  className={styles.toggleButton}
-                  style={{ fontSize: '0.9rem', marginTop: '10px' }}
-                >
-                  {isAdminLoginMode ? 'Back to User Login' : 'Login as Admin'}
-                </button>
-              </p>
+                {!isSignupMode && (
+                  <p className={styles.authToggle}>
+                    <button
+                      onClick={() => {
+                        setIsAdminLoginMode(!isAdminLoginMode);
+                        setError('');
+                        setPhoneNumber('');
+                        setPassword('');
+                      }}
+                      className={styles.toggleButton}
+                      style={{ fontSize: '0.9rem', marginTop: '10px' }}
+                    >
+                      {isAdminLoginMode ? 'Back to User Login' : 'Login as Admin'}
+                    </button>
+                  </p>
+                )}
+              </>
             )}
 
             <button
               onClick={() => {
                 setIsProfileModalOpen(false);
+                setShowAdminResetPin(false);
+                setAdminResetPin('');
+                setAdminResetEmail('');
                 setError('');
+                setResetSuccess('');
               }}
               className={styles.closeModalButton}
             >

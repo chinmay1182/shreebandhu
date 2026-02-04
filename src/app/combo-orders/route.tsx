@@ -75,6 +75,19 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    // Check combo count limit (max 15 combos)
+    const countResult = await queryDB('SELECT COUNT(*) as count FROM combo_orders') as any[];
+    const comboCount = countResult[0].count;
+
+    if (comboCount >= 15) {
+      const response = NextResponse.json(
+        { error: 'Combo limit reached. Maximum 15 combos allowed.' },
+        { status: 400 }
+      );
+      response.headers.set('Access-Control-Allow-Origin', '*');
+      return response;
+    }
+
     const formData = await request.formData();
 
     // Extract form data

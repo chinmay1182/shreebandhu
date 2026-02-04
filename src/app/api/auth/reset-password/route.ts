@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         const users = await queryDB(
             `SELECT id FROM ${table} WHERE reset_token = ? AND reset_expires > ?`,
             [token, now]
-        );
+        ) as any[];
 
         if (!users || users.length === 0) {
             return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 });
@@ -28,25 +28,14 @@ export async function POST(request: Request) {
 
         const user = users[0];
 
-        // Hash new password - Admins currently use plain text 'admin123', need to decide if we switch to bcrypt
-        // The implementation plan implies bcrypt for users. 
-        // For admins, existing code (login) might be using plain text?
-        // Let's check admin login logic later. For now, we'll assume bcrypt is safer.
-        // However, if the current admin login DOES NOT use bcrypt, this will break login until login is updated.
-        // I will use bcrypt here, and I MUST update login/signup to use bcrypt too.
-
-        let passwordToStore = newPassword;
-        // For safety, let's try to detect if we should hash.
-        // Assuming we are upgrading EVERYTHING to bcrypt.
+        // Hash new password with bcrypt
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
-        passwordToStore = hashedPassword;
 
         // Update password and clear token
-        // For admins table, the column is 'password'. For customers, it is 'password'.
         await queryDB(
             `UPDATE ${table} SET password = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?`,
-            [passwordToStore, user.id]
+            [hashedPassword, user.id]
         );
 
         return NextResponse.json({ success: true, message: 'Password reset successfully' });

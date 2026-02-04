@@ -43,6 +43,17 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // Check product count limit (max 15 products)
+    const [countResult] = await pool.query<RowDataPacket[]>('SELECT COUNT(*) as count FROM products');
+    const productCount = countResult[0].count;
+
+    if (productCount >= 15) {
+      return NextResponse.json(
+        { error: 'Product limit reached. Maximum 15 products allowed.' },
+        { status: 400 }
+      );
+    }
+
     const formData = await request.formData();
     const name = formData.get('name') as string;
     const mainTitle = formData.get('mainTitle') as string;

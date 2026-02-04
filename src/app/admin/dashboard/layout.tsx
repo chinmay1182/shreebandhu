@@ -16,19 +16,10 @@ export default function AdminLayout({
     const [layoutLoading, setLayoutLoading] = useState(true);
 
     useEffect(() => {
-        console.log('AdminLayout Effect Triggered:', { isLoading, isAuthenticated, user });
         if (!isLoading) {
-            console.log('AdminLayout Check:', {
-                role: user?.role,
-                name: user?.name,
-                matches: (user?.role === 'admin' || user?.name === 'admin')
-            });
-
-            if (!isAuthenticated || (user?.role !== 'admin' && user?.name !== 'admin')) {
-                console.log('AdminLayout: Redirecting to home...');
+            if (!isAuthenticated || user?.role !== 'admin') {
                 router.push('/');
             } else {
-                console.log('AdminLayout: Access granted');
                 setLayoutLoading(false);
             }
         }
