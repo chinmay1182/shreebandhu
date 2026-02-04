@@ -508,7 +508,7 @@ const Navbar = () => {
                 className={styles.authButton}
                 disabled={isAuthLoading}
               >
-                {isAuthLoading ? 'Processing...' : isAdminLoginMode ? 'Login as Admin' : isSignupMode ? 'Sign Up' : 'Log In'}
+                {isAuthLoading ? 'Processing....' : isAdminLoginMode ? 'Login as Admin' : isSignupMode ? 'Sign Up' : 'Log In'}
               </button>
             </form>
 
