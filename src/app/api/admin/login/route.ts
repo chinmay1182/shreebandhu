@@ -29,8 +29,18 @@ export async function POST(request: Request) {
 
         const admin = admins[0];
 
-        // Compare password with bcrypt
-        const isPasswordValid = await bcrypt.compare(password, admin.password);
+        // Support both bcrypt and plain text passwords for backward compatibility
+        let isPasswordValid = false;
+
+        // Check if password is bcrypt hashed (starts with $2b$ or $2a$)
+        if (admin.password.startsWith('$2b$') || admin.password.startsWith('$2a$')) {
+            // Use bcrypt comparison for hashed passwords
+            isPasswordValid = await bcrypt.compare(password, admin.password);
+        } else {
+            // Fallback to plain text comparison (for migration period)
+            // TODO: Remove this after all passwords are migrated to bcrypt
+            isPasswordValid = (password === admin.password);
+        }
 
         if (!isPasswordValid) {
             return NextResponse.json(
@@ -44,7 +54,6 @@ export async function POST(request: Request) {
             userId: admin.id.toString(),
             name: admin.username,
             email: '', // Admins might not have email in this simple schema
-            phone: '',
             mobile: '',
             role: 'admin'
         });
