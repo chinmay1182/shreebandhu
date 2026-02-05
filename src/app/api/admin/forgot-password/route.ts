@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         );
 
         // Step 5: Send reset email
-        const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/admin/reset-password?token=${resetToken}`;
+        const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://shreebandhu.com'}/admin/reset-password?token=${resetToken}`;
 
         const emailHtml = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
