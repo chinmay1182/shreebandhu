@@ -95,9 +95,9 @@ export default function AdminUsers() {
                             <div key={user.id} className={styles.tableRow}>
                                 <div className="row g-0 align-items-center">
                                     <div className="col-1 text-center text-muted">{index + 1}</div>
-                                    <div className="col-3 fw-medium">{user.name}</div>
-                                    <div className="col-3 text-muted">{user.email}</div>
-                                    <div className="col-2">{user.mobile}</div>
+                                    <div className="col-3 fw-medium text-truncate d-block" title={user.name}>{user.name}</div>
+                                    <div className="col-3 text-muted text-truncate d-block" title={user.email}>{user.email}</div>
+                                    <div className="col-2 text-truncate d-block" title={user.mobile}>{user.mobile}</div>
                                     <div className="col-2 text-muted small">
                                         {new Date(user.created_at).toLocaleDateString()}
                                     </div>

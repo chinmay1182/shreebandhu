@@ -172,20 +172,22 @@ const Footer = () => {
                 height={20}
               />
             </a>
-            <a title="none" href="https://www.flipkart.com" target="_blank" rel="noopener noreferrer">
-              <Image
-                src="https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Flipkart_logo.svg/1920px-Flipkart_logo.svg.png"
+            <a title="Flipkart" href="https://www.flipkart.com" target="_blank" rel="noopener noreferrer">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Flipkart_logo.svg/300px-Flipkart_logo.svg.png"
                 alt="Flipkart"
-                width={90}
-                height={25}
+                width="90"
+                height="25"
+                style={{ objectFit: 'contain' }}
               />
             </a>
-            <a title="none" href="https://www.indiamart.com" target="_blank" rel="noopener noreferrer">
-              <Image
-                src="https://upload.wikimedia.org/wikipedia/en/4/4a/Indiamart-new.png"
+            <a title="IndiaMart" href="https://www.indiamart.com" target="_blank" rel="noopener noreferrer">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/9/91/Indiamart_Logo.svg"
                 alt="IndiaMart"
-                width={80}
-                height={40}
+                width="80"
+                height="40"
+                style={{ objectFit: 'contain' }}
               />
             </a>
           </div>
