@@ -39,3 +39,6 @@ jobs:
 
                       # Cleanup unused images
                       docker image prune -f
+
+                      # Ensure public directory permissions for container
+                      chmod -R 777 ./public
