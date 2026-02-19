@@ -12,3 +12,8 @@ services:
       # Add other environment variables here or use an env_file
     env_file:
       - .env
+    volumes:
+      - ./public/products:/app/public/products
+      - ./public/reviews:/app/public/reviews
+      - ./public/banners:/app/public/banners
+      - ./public/uploads:/app/public/uploads

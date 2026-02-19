@@ -10,8 +10,8 @@ import { Toaster } from 'react-hot-toast';
 const outfit = Outfit({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Your App',
-  description: 'Your app description',
+  title: 'Shreebandhu',
+  description: 'Shreebandhu | Shop for Powders, Spices and many more.',
 };
 
 export default function RootLayout({
