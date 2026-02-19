@@ -14,7 +14,8 @@ jobs:
               with:
                   host: ${{ secrets.VPS_HOST }}
                   username: ${{ secrets.VPS_USERNAME }}
-                  password: ${{ secrets.VPS_PASSWORD }}
+                  key: ${{ secrets.VPS_KEY }}
+                  # password: ${{ secrets.VPS_PASSWORD }}
                   script: |
                       # Navigate to project directory
                       cd /home/shreebandhu/htdocs/shreebandhu.com || exit 1
