@@ -16,22 +16,33 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    console.log("--- POST /api/banners hit ---");
     const formData = await request.formData();
     const image = formData.get('image') as File;
     const link = formData.get('link')?.toString() || '';
     const title = formData.get('title')?.toString() || '';
     const display_order = formData.get('display_order')?.toString() || '0';
 
-    if (!image) {
+    console.log("FormData Received:", {
+      imageName: image?.name,
+      imageSize: image?.size,
+      imageType: image?.type
+    });
+
+    if (!image || image.size === 0) {
+      console.log("Error: Image missing or empty");
       return NextResponse.json({ error: 'Image is required' }, { status: 400 });
     }
 
+    console.log("Calling handleFileUpload...");
     const image_url = await handleFileUpload(image, 'banners');
+    console.log("File uploaded to:", image_url);
 
     await queryDB(
       'INSERT INTO banners (image_url, link, title, display_order) VALUES (?, ?, ?, ?)',
       [image_url, link, title, parseInt(display_order)]
     );
+    console.log("Database insert success");
 
     return NextResponse.json({ success: true, message: 'Banner added successfully' });
   } catch (error) {
