@@ -45,6 +45,9 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Persist uploads
+VOLUME ["/app/public"]
+
 USER nextjs
 
 EXPOSE 3002
