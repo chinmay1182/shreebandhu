@@ -147,7 +147,18 @@ export default function AdminBanners() {
                                     <div className="row w-100 align-items-center m-0">
                                         <div className="col-3">
                                             <div style={{ width: '100px', height: '50px', position: 'relative', borderRadius: '4px', overflow: 'hidden' }}>
-                                                <Image src={banner.image_url} alt="Banner" fill style={{ objectFit: 'cover' }} />
+                                                <Image
+                                                    src={banner.image_url}
+                                                    alt="Banner"
+                                                    fill
+                                                    style={{ objectFit: 'cover' }}
+                                                    unoptimized
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.src = '/Banner.jpg'; // Fallback
+                                                        target.onerror = null; // Prevent loop
+                                                    }}
+                                                />
                                             </div>
                                         </div>
                                         <div className="col-4">

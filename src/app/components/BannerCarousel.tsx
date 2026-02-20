@@ -71,6 +71,7 @@ export default function BannerCarousel() {
                 height={400}
                 priority
                 className={styles.bannerImage}
+                unoptimized
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = '/Banner.jpg';
                 }}
