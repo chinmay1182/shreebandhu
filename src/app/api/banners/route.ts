@@ -26,17 +26,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Image is required' }, { status: 400 });
     }
 
+    console.log('Uploading banner:', {
+      originalName: image.name,
+      size: image.size,
+      type: image.type
+    });
+
     const image_url = await handleFileUpload(image, 'banners');
+    
+    console.log('Banner uploaded successfully:', image_url);
 
     await queryDB(
       'INSERT INTO banners (image_url, link, title, display_order) VALUES (?, ?, ?, ?)',
       [image_url, link, title, parseInt(display_order)]
     );
 
-    return NextResponse.json({ success: true, message: 'Banner added successfully' });
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Banner added successfully',
+      image_url 
+    });
   } catch (error) {
     console.error('Error adding banner:', error);
-    return NextResponse.json({ error: 'Failed to add banner' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Failed to add banner';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
