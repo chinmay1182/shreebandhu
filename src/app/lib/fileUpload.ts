@@ -34,25 +34,52 @@ export async function handleFileUpload(file: File, subdir: string = 'uploads'): 
     const finalBasename = sanitizedBasename || 'image';
     const filename = `${finalBasename}-${timestamp}${ext}`;
 
-    // Construct paths
-    const publicDir = path.join(process.cwd(), 'public');
-    const uploadDir = path.join(publicDir, subdir);
-    const uploadPath = path.join(uploadDir, filename);
+    // Construct paths - use absolute path resolution
+    const cwd = process.cwd();
+    const publicDir = path.resolve(cwd, 'public');
+    const uploadDir = path.resolve(publicDir, subdir);
+    const uploadPath = path.resolve(uploadDir, filename);
+
+    console.log('File upload details:', {
+        originalName,
+        filename,
+        cwd,
+        publicDir,
+        uploadDir,
+        uploadPath,
+        fileSize: buffer.length
+    });
 
     // Ensure directory exists
     if (!fs.existsSync(uploadDir)) {
+        console.log(`Creating directory: ${uploadDir}`);
         await fs.promises.mkdir(uploadDir, { recursive: true });
     }
 
     // Write file and wait for it to complete
-    await fs.promises.writeFile(uploadPath, buffer);
+    console.log(`Writing file to: ${uploadPath}`);
+    await fs.promises.writeFile(uploadPath, buffer, { mode: 0o644 });
 
     // Verify file was written successfully
     if (!fs.existsSync(uploadPath)) {
-        throw new Error('Failed to write file to disk');
+        console.error(`File verification failed: ${uploadPath} does not exist`);
+        throw new Error(`Failed to write file to disk: ${uploadPath}`);
     }
 
-    return `/${subdir}/${filename}`;
+    // Verify file size matches
+    const stats = await fs.promises.stat(uploadPath);
+    if (stats.size !== buffer.length) {
+        console.error(`File size mismatch: expected ${buffer.length}, got ${stats.size}`);
+        throw new Error(`File size mismatch: expected ${buffer.length}, got ${stats.size}`);
+    }
+
+    // Log file permissions for debugging
+    console.log(`File written successfully. Size: ${stats.size}, Mode: ${stats.mode.toString(8)}`);
+
+    const imageUrl = `/${subdir}/${filename}`;
+    console.log(`File uploaded successfully: ${imageUrl}`);
+    
+    return imageUrl;
 }
 
 export async function deleteFile(filePath: string) {
