@@ -26,48 +26,13 @@ export async function handleFileUpload(file: File, subdir: string = 'uploads'): 
     const uploadDir = path.join(publicDir, subdir);
     const uploadPath = path.join(uploadDir, filename);
 
-    // Debug logging
-    const logMessage = `
---- Upload Attempt ---
-Time: ${new Date().toISOString()}
-Original Name: ${file.name}
-Clean Name: ${cleanName}
-Filename: ${filename}
-Upload Dir: ${uploadDir}
-Full Path: ${uploadPath}
-Process CWD: ${process.cwd()}
-File Size: ${buffer.length} bytes
-----------------------
-`;
-    console.log(logMessage);
-
-    // Write debug log to root
-    try {
-        await fs.promises.appendFile(path.join(process.cwd(), 'upload_debug.log'), logMessage);
-    } catch (logError) {
-        console.error("Failed to write debug log", logError);
+    // Ensure directory exists
+    if (!fs.existsSync(uploadDir)) {
+        await fs.promises.mkdir(uploadDir, { recursive: true });
     }
 
-    try {
-        // Ensure directory exists
-        if (!fs.existsSync(uploadDir)) {
-            await fs.promises.mkdir(uploadDir, { recursive: true });
-        }
-
-        // Write file
-        await fs.promises.writeFile(uploadPath, buffer);
-
-        // Verify file exists immediately after write
-        if (fs.existsSync(uploadPath)) {
-            await fs.promises.appendFile(path.join(process.cwd(), 'upload_debug.log'), `SUCCESS: File confirmed at ${uploadPath}\n`);
-        } else {
-            await fs.promises.appendFile(path.join(process.cwd(), 'upload_debug.log'), `FAILURE: File NOT found at ${uploadPath} immediately after write\n`);
-        }
-
-    } catch (error) {
-        await fs.promises.appendFile(path.join(process.cwd(), 'upload_debug.log'), `ERROR: ${error}\n`);
-        throw error;
-    }
+    // Write file
+    await fs.promises.writeFile(uploadPath, buffer);
 
     return `/${subdir}/${filename}`;
 }
