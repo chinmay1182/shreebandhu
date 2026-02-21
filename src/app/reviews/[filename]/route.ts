@@ -10,9 +10,9 @@ export async function GET(
 ) {
   try {
     const { filename } = await params;
-    return serveStaticFile('banners', filename);
+    return serveStaticFile('reviews', filename);
   } catch (error) {
-    console.error('Error serving banner file:', error);
+    console.error('Error serving review file:', error);
     return NextResponse.json({ error: 'Failed to serve file' }, { status: 500 });
   }
 }
