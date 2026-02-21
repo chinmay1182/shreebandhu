@@ -96,8 +96,12 @@ export default function ComboCard({ combo }: { combo: Combo }) {
   const getImageUrl = (url: string | null, isCombo: boolean = false) => {
     if (isCombo && !url) return '/salty.jpg';
     if (!url) return null;
-    const absolute = url.startsWith('http') ? url : `https://adminpanel.shreebandhu.com/${url}`;
-    return `/api/proxy?url=${encodeURIComponent(absolute)}`;
+    // Local paths (e.g. /uploads/combo-xxx.jpg from backend uploads) - use as-is
+    if (url.startsWith('/')) return url;
+    // External URLs - proxy through our API
+    if (url.startsWith('http')) return `/api/proxy?url=${encodeURIComponent(url)}`;
+    // Relative paths without leading slash - treat as local
+    return `/${url}`;
   };
 
   const images = {
